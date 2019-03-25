@@ -14,5 +14,16 @@
             "key": "EQZW42CEHRGW2R3EJI4UERBDGI",
             "verified": false
         }
+    },
+    "admin": {
+        "uid": "admin",
+        "password": "$argon2i$v=19$m=16384,t=4,p=1$9cXm6rNPcFuiqEZrhhs/OIFq3cVEE7skrq6TmLWjrOI$V3wl2cmHP/OY5Moy6dwi4Qqd0g0nYde6DCXsoAKSUf1aYEkL0Khuq8UJlT5Jg1A8UU6KwAlb7SQTaXMQfKkkhQ",
+        "groups": [
+            "default"
+        ],
+        "secret": {
+            "key": "HFTDSXLSGFWUIMR6NNGGGQSFHE",
+            "verified": false
+        }
     }
 }

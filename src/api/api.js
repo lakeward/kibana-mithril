@@ -9,9 +9,8 @@ const Path = require('path');
 const Config = require('../config');
 const TwoFactor = require('../authentication/twofactor');
 const Authentication = require('../authentication/auth');
+const ACM = require('../authentication/acm');
 const Logger = require('../logger');
-
-const COOKIE_NAME = 'token';
 
 module.exports = {
 
@@ -28,7 +27,7 @@ module.exports = {
             path: '/logout',
 
             handler(request, h) {
-                return h.response().unstate(COOKIE_NAME, cookie()).code(200);
+                return h.response().unstate(Config.tokenName(), cookie()).code(200);
             }
         });
 
@@ -82,7 +81,7 @@ module.exports = {
                                         Logger.succeeded2FA(user.uid, source(request));
                                     }
 
-                                    h.state(COOKIE_NAME, Authentication.signToken(user.uid, user.groups), cookie());
+                                    h.state(Config.tokenName(), Authentication.signToken(user.uid, user.groups), cookie());
                                     resolve(h.response().code(200));
                                 } else {
                                     if (nonce != '') {
@@ -109,12 +108,40 @@ module.exports = {
         server.auth.scheme("mithril", (server, options) => {
             return {
                 authenticate: async (request, h) => {
-                    try {
-                        let credentials = await server.auth.test("jwt", request);
-                        return h.authenticated({credentials: credentials});
+                    try {                
+                     
+                        if (Config.storage() === "acm") {
+
+                            let authToken = await Authentication.hasToken(request);
+                            let acmToken = await ACM.hasToken(request);
+    
+                            if (authToken && acmToken) {
+                                return h.authenticated({credentials: await server.auth.test("jwt", request)});
+                            } else if (acmToken) {
+
+                                await ACM.verifyToken(request);
+                                await ACM.verifyPermissionType(request);
+                                await Authentication.setToken(request, h);
+
+                                return h.authenticated({credentials: await server.auth.test("jwt", request)});
+                            } else {
+                                throw new Error("acmToken required to authenticate with storage='amc'");                              
+                            }
+    
+                        } else {
+                            return h.authenticated({credentials: await server.auth.test("jwt", request)});
+                        }
                     } catch (e) {
-                        Logger.unauthorized(request.url.path, source(request));
-                        return h.redirect(`${basePath}/mithril`).takeover();
+                        Logger.log(e);
+                        if (Config.storage() === "acm") {
+                            h.unstate(Config.tokenName(), cookie());
+                            return h.redirect(Config.acmRedirectUrl()).takeover();
+                        } else if (Config.storage() === "insight") {
+                            h.unstate(Config.tokenName(), cookie());
+                            return h.redirect(Config.insightRedirectUrl()).takeover();
+                        } else {
+                            return h.redirect(`${basePath}/mithril`).takeover();
+                        }
                     }
                 }
             }
@@ -128,7 +155,8 @@ module.exports = {
             server.auth.strategy('jwt', 'jwt', {
                 key: Authentication.secret(),
                 validate: validate,
-                verifyOptions: {algorithms: ['HS256']}
+                verifyOptions: {algorithms: ['HS256']},
+                cookieKey: Config.tokenName()                
             });
 
             server.auth.strategy("mithril", "mithril", {});

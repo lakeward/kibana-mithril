@@ -1,7 +1,7 @@
 {
-    "storage": "file",
+    "storage": "acm",
     "two-factor": {
-        "enabled": true,
+        "enabled": false,
         "length": 16
     },
     "proxy": {
@@ -10,17 +10,19 @@
         "remote": "localhost:5601"
     },
     "authentication": {
-        "kbnVersion": "6.6.0",
+        "kbnVersion": "6.6.2",
+        "tokenName": "amToken",
         "cookie": {
-            "ttl": 1209600,
+            "ttl": null,
             "path": "/",
             "encoding": "none",
             "isSecure": false,
-            "isHttpOnly": true,
+            "isHttpOnly": false,
             "clearInvalid": true,
-            "strictHeader": true
+            "strictHeader": true,
+            "domain": ".flatironssolutions.com"
         },
-        "secret": null
+        "secret": "ueu9F8/OCKxLHbta4coEhTHc0kSulmuZ7K6Q00D6M5iX1CNmsd09js4mdT8YBEbgMylDl1NJmtthDFi1b7uN2A=="
     },
     "file": {
         "filename": "users.json"
@@ -39,5 +41,14 @@
     },
     "mongodb": {
         "remote": "mongodb://localhost/plugin"
+    },
+    "acm": {
+        "host": "aa-portal-dev.flatironssolutions.com",
+        "port": "8081",
+        "protocol": "http",
+        "tokenName": "acmToken",
+        "acmPermissionType" : "Audit Manager",
+        "redirectUrl": "http://aa-portal-dev.flatironssolutions.com:8081/acmclient/#/login?logout=You%20are%20not%20logged%20in&url=http:%2F%2Faa-portal-dev.flatironssolutions.com:5601%2Fapp%2Fkibana",
+        "userFile": "users.json"
     }
 }

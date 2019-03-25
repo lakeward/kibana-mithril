@@ -89,6 +89,48 @@ module.exports = {
     },
 
     /**
+     * Returns the name of the token name from configuration.
+     */
+    storage: () => {
+        return config['storage'];
+    },
+
+    /**
+     * Returns the name of the token name from configuration.
+     */
+    tokenName: () => {
+        return config['authentication']['tokenName'];
+    },
+
+    acmHost: () => {
+        return config['acm']['host'];
+    },
+
+    acmPort: () => {
+        return config['acm']['port'];
+    },
+
+    acmProtocol: () => {
+        return config['acm']['protocol'];
+    },
+
+    acmTokenName: () => {
+        return config['acm']['tokenName'];
+    },
+
+    acmRedirectUrl: () => {
+        return config['acm']['redirectUrl'];
+    },
+
+    acmUserFile: () => {
+        return config['acm']['userFile'];
+    },
+
+    acmPermissionType: () => {
+        return config['acm']['acmPermissionType'];
+    },
+
+    /**
      * @return the configuration object.
      */
     get: () => config
