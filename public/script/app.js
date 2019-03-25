@@ -31,7 +31,7 @@ app.controller('kibana-mithril', ($scope, $http) => {
 
   $scope.logout = () => {
 
-    $http.post(chrome.addBasePath('/logout'), {}).then(
+    $http.post(chrome.addBasePath('/corena/logout'), {}).then(
       function success() {
         window.location = chrome.addBasePath('/');
       },
@@ -42,7 +42,7 @@ app.controller('kibana-mithril', ($scope, $http) => {
   };
 
   $scope.init = () => {
-    $http.get(chrome.addBasePath('/groups')).then(
+    $http.get(chrome.addBasePath('/corena/groups')).then(
       function success(request) {
         $scope.groups = request.data.groups;
       },

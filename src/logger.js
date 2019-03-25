@@ -54,20 +54,6 @@ module.exports = {
     },
 
     /**
-     * Call when 2FA verification has succeeded.
-     */
-    succeeded2FA: (user, source) => {
-        log(`2FA verification succeeded for user ${user} from ${ip(source)}`);
-    },
-
-     /**
-     * Call when two-factor verification has failed.
-     */
-    failed2FA: (user, source) => {
-        log(`2FA verification failed for user ${user} from ${ip(source)}`, WARNING);
-    },
-
-    /**
      * Call when a request is blocked because of missing authorization.
      */
     unauthorized: (path, source) => {

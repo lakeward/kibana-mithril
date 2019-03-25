@@ -89,10 +89,10 @@ module.exports = {
     },
 
     /**
-     * Returns the name of the token name from configuration.
+     * Returns the type of the configured authentication
      */
-    storage: () => {
-        return config['storage'];
+    authScheme: () => {
+        return config['authScheme'];
     },
 
     /**

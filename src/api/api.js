@@ -4,12 +4,12 @@
  * Adds the server API to an existing Hapi server object.
  */
 
-const Jade = require('pug');
+const Jwt = require("jsonwebtoken");
 const Path = require('path');
 const Config = require('../config');
-const TwoFactor = require('../authentication/twofactor');
-const Authentication = require('../authentication/auth');
-const ACM = require('../authentication/acm');
+const Auth = require('../authentication/auth');
+const AmToken = require('../authentication/amtoken');
+const Acm = require('../authentication/acm');
 const Logger = require('../logger');
 
 module.exports = {
@@ -19,128 +19,84 @@ module.exports = {
      *
      * @param server Hapi server to register routes on.
      */
-    register: async function (server) {
+    register: async (server) => {
         let basePath = server.config().get('server.basePath');
 
+        /**
+         *  Logout route 
+         */
         server.route({
             method: 'POST',
-            path: '/logout',
+            path: '/corena/logout',
 
             handler(request, h) {
-                return h.response().unstate(Config.tokenName(), cookie()).code(200);
+                h.unstate(Config.tokenName(), Config.cookie());
+                //TODO: Decide if we need a different cookie object for ACM
+                h.unstate(Config.acmTokenName(), Config.cookie());
+                return h.response().code(200);
             }
         });
 
+        /**
+         * Groups route
+         */
         server.route({
             method: 'GET',
-            path: '/mithril',
-            config: {auth: false},
-
-            handler(request, h) {
-                return Jade.renderFile(
-                    Path.resolve(__dirname, '../../public/mithril.pug'), {
-                        'kbnVersion': Config.version(),
-                        'basePath': basePath
-                    });
-            }
-        });
-
-        server.route({
-            method: 'GET',
-            path: '/groups',
+            path: '/corena/groups',
 
             handler(request, h) {
                 return {groups: request.auth.credentials.groups};
             }
         });
 
-        server.route({
-            method: 'POST',
-            path: '/mithril',
-            config: {auth: false},
-            handler(request, h) {
-                const username = request.payload.username;
-                const password = request.payload.password;
-                const nonce = request.payload.nonce;
 
-                return new Promise((resolve, reject) => {
-                    Authentication.authenticate(username, password, (err, user) => {
-
-                        if (err || !user) {
-                            Logger.failedAuthentication(username, source(request));
-                            resolve(h.response().code(401));
-                        } else {
-                            // only log succeeded authentication if its not a 2FA attempt.
-                            if (!TwoFactor.enabled() || nonce === '') {
-                                Logger.succeededAuthentication(user.uid, source(request));
-                            }
-
-                            TwoFactor.verify(user.uid, nonce, (success, secret) => {
-                                if (success) {
-                                    if (TwoFactor.enabled()) {
-                                        Logger.succeeded2FA(user.uid, source(request));
-                                    }
-
-                                    h.state(Config.tokenName(), Authentication.signToken(user.uid, user.groups), cookie());
-                                    resolve(h.response().code(200));
-                                } else {
-                                    if (nonce != '') {
-                                        // if nonce is unset then it wasn't a 2FA verification request.
-                                        Logger.failed2FA(user.uid, source(request));
-                                    }
-
-                                    if (secret.verified === true) {
-                                        // secret already verified return an error.
-                                        resolve(h.response({"error": (nonce)}).code(406));
-                                    } else {
-                                        // secret is not verified - return a new qr/code.
-                                        resolve(h.response(TwoFactor.create(user.uid)).code(406));
-                                    }
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-        });
 
         // Login based scheme as a wrapper for JWT scheme.
-        server.auth.scheme("mithril", (server, options) => {
+        /**
+         * CORENA authentication scheme that requires an acmToken or ACTIVITI_REMEMBER_ME token.
+         * If either token exists, schema validates the token and generates amToken which is used for 
+         * all other requests during the session.
+         */
+        server.auth.scheme("corena", (server, options) => {
             return {
                 authenticate: async (request, h) => {
                     try {                
                      
-                        if (Config.storage() === "acm") {
+                        if (Config.authScheme() === "acm") {
+                            let hasAmToken = await Auth.hasAmToken(request);
+                            let hasAcmToken = await Auth.hasAuthToken(request);
 
-                            let authToken = await Authentication.hasToken(request);
-                            let acmToken = await ACM.hasToken(request);
-    
-                            if (authToken && acmToken) {
-                                return h.authenticated({credentials: await server.auth.test("jwt", request)});
-                            } else if (acmToken) {
+                            if (hasAmToken && hasAcmToken) {
 
-                                await ACM.verifyToken(request);
-                                await ACM.verifyPermissionType(request);
-                                await Authentication.setToken(request, h);
+                                let credentials = await server.auth.test("jwt", request);
+                                return h.authenticated({credentials: credentials});                            
 
-                                return h.authenticated({credentials: await server.auth.test("jwt", request)});
+                            } else if (hasAcmToken) {
+
+                                await Auth.verifyAuthToken(request);
+                                await Auth.verifyAuthPermissions(request);                                
+                                await Auth.setAmToken(request, h);
+
+                                let credentials = await server.auth.test("jwt", request);
+                                return h.authenticated({credentials: credentials});
+
                             } else {
-                                throw new Error("acmToken required to authenticate with storage='amc'");                              
-                            }
-    
+                                throw new Error("acmToken required to authenticate with authScheme='amc'");                              
+                            }    
+
                         } else {
-                            return h.authenticated({credentials: await server.auth.test("jwt", request)});
+                            let credentials = await server.auth.test("jwt", request);
+                            return h.authenticated({credentials: credentials});    
                         }
                     } catch (e) {
                         Logger.log(e);
-                        if (Config.storage() === "acm") {
-                            h.unstate(Config.tokenName(), cookie());
+                        h.unstate(Config.tokenName(), Config.cookie());
+                        if (Config.authScheme() === "acm") {
                             return h.redirect(Config.acmRedirectUrl()).takeover();
-                        } else if (Config.storage() === "insight") {
-                            h.unstate(Config.tokenName(), cookie());
+                        } else if (Config.authScheme() === "insight") {
                             return h.redirect(Config.insightRedirectUrl()).takeover();
                         } else {
-                            return h.redirect(`${basePath}/mithril`).takeover();
+                            return h.redirect(`${basePath}/corena`).takeover();
                         }
                     }
                 }
@@ -153,18 +109,18 @@ module.exports = {
 
             // needs to be registered so we can reference it from our custom strategy.
             server.auth.strategy('jwt', 'jwt', {
-                key: Authentication.secret(),
+                key: AmToken.secret(),
                 validate: validate,
                 verifyOptions: {algorithms: ['HS256']},
                 cookieKey: Config.tokenName()                
             });
 
-            server.auth.strategy("mithril", "mithril", {});
+            server.auth.strategy("corena", "corena", {});
 
             // hack to override the default strategy that is already set by x-pack.
             server.auth.settings.default = null;
 
-            server.auth.default("mithril");
+            server.auth.default("corena");
         } catch (err) {
             throw err;
         }
@@ -182,16 +138,8 @@ module.exports = {
  * @param callback {error, success}
  */
 function validate(token, h) {
-  let valid = new Date().getTime() < token.expiry;
+  let valid = new Date().getTime() < token.expiry;  
   return {isValid: valid};
-}
-
-
-/**
-* Return the cookie configuration from config.json.
-*/
-function cookie() {
-    return Config.load('authentication').cookie;
 }
 
 /**
@@ -199,7 +147,7 @@ function cookie() {
 * X-Forwarded-For header but always includes both the header value
 * and the proxy's IP address (to prevent spoofing the logs).
 */
-function source(request) {
+function source (request) {
     return {
         ip: request.info.remoteAddress,
         forwarded: request.headers['x-forwarded-for']
