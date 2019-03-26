@@ -4,12 +4,9 @@
  * Adds the server API to an existing Hapi server object.
  */
 
-const Jwt = require("jsonwebtoken");
-const Path = require('path');
 const Config = require('../config');
 const Auth = require('../authentication/auth');
-const AmToken = require('../authentication/amtoken');
-const Acm = require('../authentication/acm');
+const KibanaToken = require('../authentication/kibanatoken');
 const Logger = require('../logger');
 
 module.exports = {
@@ -54,7 +51,7 @@ module.exports = {
         // Login based scheme as a wrapper for JWT scheme.
         /**
          * CORENA authentication scheme that requires an acmToken or ACTIVITI_REMEMBER_ME token.
-         * If either token exists, schema validates the token and generates amToken which is used for 
+         * If either token exists, schema validates the token and generates Kibana token which is used for 
          * all other requests during the session.
          */
         server.auth.scheme("corena", (server, options) => {
@@ -63,19 +60,19 @@ module.exports = {
                     try {                
                      
                         if (Config.authScheme() === "acm") {
-                            let hasAmToken = await Auth.hasAmToken(request);
+                            let hasKibanaToken = await Auth.hasKibanaToken(request);
                             let hasAcmToken = await Auth.hasAuthToken(request);
 
-                            if (hasAmToken && hasAcmToken) {
+                            if (hasKibanaToken && hasAcmToken) {
 
                                 let credentials = await server.auth.test("jwt", request);
                                 return h.authenticated({credentials: credentials});                            
-
+                                
                             } else if (hasAcmToken) {
 
                                 await Auth.verifyAuthToken(request);
                                 await Auth.verifyAuthPermissions(request);                                
-                                await Auth.setAmToken(request, h);
+                                await Auth.setKibanaToken(request, h);
 
                                 let credentials = await server.auth.test("jwt", request);
                                 return h.authenticated({credentials: credentials});
@@ -109,7 +106,7 @@ module.exports = {
 
             // needs to be registered so we can reference it from our custom strategy.
             server.auth.strategy('jwt', 'jwt', {
-                key: AmToken.secret(),
+                key: KibanaToken.secret(),
                 validate: validate,
                 verifyOptions: {algorithms: ['HS256']},
                 cookieKey: Config.tokenName()                
@@ -130,15 +127,13 @@ module.exports = {
 
 
 /**
- * Verifies that the token carried by the request grants access to
- * the requested page or API/Index resource.
- *
+ * Validates that the token has not expired
+ * 
  * @param token JWT token carried in a cookie.
- * @param request To be validated.
- * @param callback {error, success}
+ * @param h Handler
  */
 function validate(token, h) {
-  let valid = new Date().getTime() < token.expiry;  
+  let valid = new Date().getTime() < token.expiry;
   return {isValid: valid};
 }
 

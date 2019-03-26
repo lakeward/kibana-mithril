@@ -3,11 +3,11 @@
     "proxy": {
         "enabled": false,
         "port": 7575,
-        "remote": "localhost:5601"
+        "remote": "aa-portal-dev.flatironssolutions.com:5601"
     },
     "authentication": {
         "kbnVersion": "6.6.2",
-        "tokenName": "amToken",
+        "tokenName": "kibanaToken",
         "cookie": {
             "ttl": null,
             "path": "/",
@@ -18,7 +18,7 @@
             "strictHeader": true,
             "domain": ".flatironssolutions.com"
         },
-        "secret": "corena-am-secret"
+        "secret": "O2QaGH4lEba+sUOjNLEE8vGusowB07FXeIcukDG1aY3gdh1Th36C8ykyprhBhkHMkFlu5YKOZvgHxEmiC+PLJA=="
     },
     "acm": {
         "host": "aa-portal-dev.flatironssolutions.com",

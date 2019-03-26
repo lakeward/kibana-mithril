@@ -45,59 +45,49 @@ module.exports = {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 4));
     },
 
-    /**
-     * Returns the configured token secret.
-    */
+    get: () => config,
+    
+    proxyEnabled: () => {
+        return config['proxy']['enabled'];
+    },
+
+    proxyPort: () => {
+        return config['proxy']['port'];
+    },
+
+    proxyRemote: () => {
+        return config['proxy']['remote'];
+    },
+
+    authScheme: () => {
+        return config['authScheme'];
+    },
+
     secret: () => {
         return config['authentication']['secret'];
     },
 
-    /**
-     * Sets the secret used to sign tokens.
-     */
     setSecret: (secret) => {
         config['authentication']['secret'] = secret;
         module.exports.save();
     },
 
-    /**
-     * Returns the cookie configuration.
-     */
     cookie: () => {
         return config['authentication']['cookie'];
     },
 
-    /**
-     * Returns the kibana version from configuration.
-     */
     version: () => {
         return config['authentication']['kbnVersion'];
     },
 
-    /**
-     * Returns the version of the plugin from package.json.
-     */
     pluginVersion: () => {
         return pkg['version'];
     },
 
-    /**
-     * Returns the name of the plugin from package.json.
-     */
     pluginName: () => {
         return pkg['name'];
     },
 
-    /**
-     * Returns the type of the configured authentication
-     */
-    authScheme: () => {
-        return config['authScheme'];
-    },
-
-    /**
-     * Returns the name of the token name from configuration.
-     */
     tokenName: () => {
         return config['authentication']['tokenName'];
     },
@@ -122,16 +112,8 @@ module.exports = {
         return config['acm']['redirectUrl'];
     },
 
-    acmUserFile: () => {
-        return config['acm']['userFile'];
-    },
-
     acmPermissionType: () => {
         return config['acm']['acmPermissionType'];
     },
 
-    /**
-     * @return the configuration object.
-     */
-    get: () => config
 };

@@ -6,92 +6,103 @@
  * authorization before they are routed.
  */
 
-const Querystring = require('querystring');
-const Express = require('express');
-const Proxy = require('express-http-proxy');
-const Authentication = require('../authentication/auth');
-const Config = require('../config').load('proxy');
+const Querystring = require("querystring");
+const Express = require("express");
+const Proxy = require("express-http-proxy");
+const Auth = require("../authentication/auth");
+const Config = require("../config");
+const Logger = require("../logger");
 
 let app = Express();
 
 module.exports = {
-
-    /**
-     * Adds proxying in front of an existing Hapi server.
-     * Allows requests to be modified by permissions before
-     * they are routed.
-     */
-    proxy: function () {
-        if (Config.enabled) {
-            app.use('/', Proxy(Config.remote, {
-                filter: (req, res) => {
-                    return true;
-                },
-                proxyReqBodyDecorator: req => {
-
-                    if (req.path.startsWith('/elasticsearch/_msearch')) {
-                        return module.exports.handleSearch(req);
-                    } else {
-                        return req;
-                    }
-                },
-                forwardPath: req => {
-                    return require('url').parse(req.url).path;
-                }
-            }));
-            app.listen(Config.port);
-        }
-    },
-
-    /**
-     * Handles the filtering of a search endpoint in the kibana server API.
-     * User group membership are matched against the queried index.
-     *
-     * @param req the request to be inspected contains user groups and requested index.
-     * @returns {*}
-     */
-    handleSearch: function (req) {
-        const query = getQueryList(req.bodyContent);
-        let response = '';
-        let authorized = true;
-
-        try {
-            const token = Authentication.verifyToken(Querystring.parse(req.headers.cookie).token);
-
-            for (let i = 0; i < query.length; i++) {
-                const search = JSON.parse(query[i]);
-
-                if (search.index && !authorizedIndex(search.index, token.groups))
-                    authorized = false;
-
-                response += JSON.stringify(search);
-
-                if (i !== query.length - 1)
-                    response += '\n';
+  /**
+   * Adds proxying in front of an existing Hapi server.
+   * Allows requests to be modified by permissions before
+   * they are routed.
+   */
+  proxy: () => {
+    if (Config.proxyEnabled()) {
+      app.use(
+        "/",
+        Proxy(Config.proxyRemote(), {
+          filter: (req, res) => {
+            return true;
+          },
+          proxyReqBodyDecorator: (requestBody, request) => {
+            if (request.path.startsWith("/elasticsearch/_msearch")) {
+              return module.exports.handleSearch(requestBody, request);
+            } else {
+              return requestBody;
             }
-        } catch (err) {
-            authorized = false;
-        }
-
-        if (authorized) {
-            req.bodyContent = new Buffer(response);
-        } else {
-            req.bodyContent = new Buffer('{}');
-        }
-
-        return req;
-    },
-
-    /**
-     * Checks if a given index is contained within a list of groups.
-     *
-     * @param index the name of the index.
-     * @param groups an array of groups to look in.
-     * @returns {boolean}
-     */
-    authorizedIndex: function (index, groups) {
-        return authorizedIndex(index, groups);
+          }
+          // forwardPath: req => {
+          //     return require('url').parse(req.url).path;
+          // }
+        })
+      );
+      app.listen(Config.proxyPort());
     }
+  },
+
+  /**
+   * Handles the filtering of a search endpoint in the kibana server API.
+   * User group membership are matched against the queried index.
+   *
+   * @param req the request to be inspected contains user groups and requested index.
+   * @returns {*}
+   */
+  handleSearch: function(requestBody, request) {
+    let query = getQueryList(requestBody);
+    let authorized = true;
+    let response = "";
+
+    try {
+      let cookies = getCookies(request);
+      let kibanaToken = cookies[Config.tokenName()];
+
+      const authorization = Auth.verifyKibanaToken(kibanaToken);
+
+      Logger.log(query);
+      for (let i = 0; i < query.length; i++) {
+        const queryItem = JSON.parse(query[i]);
+        Logger.log(queryItem.index);
+
+        if (
+          queryItem.index &&
+          !authorizedIndex(queryItem.index, authorization.groups)
+        ) {
+          authorized = false;
+        }
+
+        response += JSON.stringify(queryItem);
+
+        if (i !== query.length - 1) response += "\n";
+      }
+    } catch (err) {
+      Logger.log(err);
+      authorized = false;
+    }
+
+    // if (authorized) {
+    //     reqBody = new Buffer(response);
+    // } else {
+    //     reqBody = new Buffer('{}');
+    // }
+
+    return requestBody;
+  },
+
+  /**
+   * Checks if a given index is contained within a list of groups.
+   *
+   * @param index the name of the index.
+   * @param groups an array of groups to look in.
+   * @returns {boolean}
+   */
+  authorizedIndex: function(index, groups) {
+    return authorizedIndex(index, groups);
+  }
 };
 
 /**
@@ -102,30 +113,49 @@ module.exports = {
  * @returns Array of strings with one item per json object.
  */
 function getQueryList(content) {
-    const list = content.toString().split('\n');
+  let list = content.toString("utf8").split("\n");
 
-    if (list.length === 0)
-        return [content.toString()];
-    else {
-        return list;
+  list = list.filter(item => {
+    Logger.log(item.index);
+    if (item && item.length > 0 && item.index) {
+      Logger.log(item);
+      return item;
     }
+  });
+
+  if (list.length === 0) {
+    return {};
+  } else {
+    return JSON.stringify(list[0]);
+  }
 }
 
 function authorizedIndex(index, groups) {
-    let authorized = true;
-    index = (index instanceof Array) ? index : [index];
+  let authorized = true;
+  index = index instanceof Array ? index : [index];
 
-    for (let i = 0; i < index.length; i++) {
-        let member = false;
+  for (let i = 0; i < index.length; i++) {
+    let member = false;
 
-        for (let k = 0; k < groups.length; k++) {
-            if (index[i] === groups[k])
-                member = true;
-        }
-
-        if (!member)
-            authorized = false;
+    for (let k = 0; k < groups.length; k++) {
+      if (index[i] === groups[k]) member = true;
     }
 
-    return authorized;
+    if (!member) authorized = false;
+  }
+
+  return authorized;
+}
+
+function getCookies(request) {
+  let list = {};
+  let rc = request.headers.cookie;
+
+  rc &&
+    rc.split(";").forEach(cookie => {
+      var parts = cookie.split("=");
+      list[parts.shift().trim()] = decodeURI(parts.join("="));
+    });
+
+  return list;
 }

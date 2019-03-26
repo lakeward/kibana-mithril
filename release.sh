@@ -1,5 +1,5 @@
 #!/bin/bash
-# Release script for kibana-mithril.
+# Release script for kibana-corena-authorization.
 # usage: ./release.sh 7.0.0 ubuntu
 # $1 the parameter indicates the version we are building for.
 # $2 the platform we are building for.
@@ -39,7 +39,7 @@ jq --raw-output '.authentication.secret = null' config.json > $tmp_file && mv $t
 
 dist="./build/dist/"
 build="./build/"
-plugin_root="./build/kibana/kibana-mithril/"
+plugin_root="./build/kibana/kibana-corena-authorization/"
 
 # clear previous builds
 if [ -e "$output" ];
@@ -62,7 +62,7 @@ mkdir -p $plugin_root
 # 3. must work on both windows/linux - ie, no symbolic links.
 
 # here's what I've tried to make the zip structure work.
-# 1. the zip utility is not able to prefix the root dir with kibana/kibana-mithril inside the zip.
+# 1. the zip utility is not able to prefix the root dir with kibana/kibana-corena-authorization inside the zip.
 # 2. the tar utility can prefix the root dir and exclude files, but not create ZIP files as required by kibana.
 # 3. cp alone does not work as it has no support for excluding files
 #	- we get a recursion error when copying a parent folder into a subdirectory
@@ -78,7 +78,7 @@ find . -maxdepth 1 -type f | xargs cp -u -v -t $plugin_root
 # to identify a plugin zip, why can't they just read the "kibana" property from the package.json? why isn't the plugin
 # helper available on npm? Checking out the whole kibana repo and making sure yarn bootstrap works is too much overhead.
 
-out="./dist/mithril-$platform-$version.zip"
+out="./dist/kibana-corena-authorization-$platform-$version.zip"
 
 # finally pack the dist zip.
 cd $build

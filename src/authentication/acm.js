@@ -9,7 +9,7 @@ const Jwt = require("jsonwebtoken");
 const Util = require("util");
 const Fetch = require('node-fetch');
 
-const AmToken = require('./amtoken');
+const KibanaToken = require('./kibanatoken');
 const Config = require("../config");
 const Logger = require("../logger");
 
@@ -30,16 +30,16 @@ function getUrlVerifyPermission() {
 module.exports = {
 
   /**
-   * Using properties from acmToken, create an amToken that is used to validate the system.
+   * Using properties from acmToken, create Kibana token that is used to validate the system.
    * This enables Audit Manager to be less chatty with ACM.
    */
-  setAmToken: async (request, h) => {
+  setKibanaToken: async (request, h) => {
 
     let authToken = await module.exports.getToken(request);
     let decodeToken = Jwt.decode(authToken);
 
     return new Promise( (resolve, reject) => {
-      let token = AmToken.signToken(decodeToken.sub, decodeToken.groups, decodeToken.exp, decodeToken.iat);
+      let token = KibanaToken.signToken(decodeToken.sub, decodeToken.groups, decodeToken.exp, decodeToken.iat);
 
       h.state(Config.tokenName(), token, Config.cookie());
       request.state[Config.tokenName()] = token;

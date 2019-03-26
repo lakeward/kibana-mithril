@@ -13,47 +13,45 @@ describe('Configuration reader', () => {
        require('../src/config').reload();
     });
 
-    it('Should read and verify the LDAP configuration.', () => {
-        const config = require('../src/config').load('ldap');
+    it('Should read and verify the ACM configuration.', () => {
+        const config = require('../src/config').load('acm');
 
         Assert.notEqual(config, 'Failed to load configuration file.');
-        Assert.notEqual(config.url, null);
-        Assert.notEqual(config.admin, null);
-        Assert.notEqual(config.admin.dn, null);
-        Assert.notEqual(config.admin.password, null);
-        Assert.notEqual(config.search, null);
-        Assert.notEqual(config.search.scope, null);
-        Assert.notEqual(config.search["user-dn"], null);
-        Assert.notEqual(config.search["group-dn"], null);
-    });
+        Assert.notEqual(config.host, null);
+        Assert.notEqual(config.port, null);
+        Assert.notEqual(config.protocol, null);
+        Assert.notEqual(config.tokenName, null);
+        Assert.notEqual(config.acmPermissionType, null);
+        Assert.notEqual(config.redirectUrl, null);
 
-    it('Should read and verify the Two Factor configuration.', () => {
-        const config = require('../src/config').load('two-factor');
+        Assert.notEqual(Config.acmHost(), null);
+        Assert.notEqual(Config.acmPort(), null);
+        Assert.notEqual(Config.acmProtocol(), null);
+        Assert.notEqual(Config.acmRedirectUrl(), null);
+        Assert.notEqual(Config.acmTokenName(), null);
+        Assert.notEqual(Config.acmPermissionType(), null);
 
-        Assert.equal(config.enabled, true);
-        Assert.equal(config.length, 16);
-        Assert.notEqual(config.length, null);
     });
 
     it('Should read and verify the Login/Cookie configuration.', () => {
         const config = require('../src/config').load('authentication');
 
+        Assert.notEqual(config.kbnVersion, null);
+        Assert.notEqual(config.tokenName, null);
         Assert.notEqual(config.cookie, null);
-        Assert.notEqual(config.cookie.ttl, null);
+        Assert.equal(config.cookie.ttl, null);
+        Assert.notEqual(config.cookie.path, null);
+        Assert.notEqual(config.cookie.encoding, null);
+        Assert.notEqual(config.cookie.isHttpOnly, null);
+        Assert.notEqual(config.cookie.clearInvalid, null);
+        Assert.notEqual(config.cookie.strictHeader, null);
+        Assert.notEqual(config.cookie.domain, null);        
         Assert.notEqual(config.secret, null);
     });
 
-    it('Should save configuration to config.json when calling save()', () => {
-        let expected = "wowzayahoo";
-        Config.setSecret(expected);
-        Config.save();
-        Config.reload();
-        Assert.equal(expected, Config.secret());
-    });
 
     after(() => {
-        Config.setSecret(null);
-        Config.save()
+        // Config.save()
     });
 
 });

@@ -18,22 +18,22 @@ module.exports = {
    * @param token to be verified.
    * @return Boolean
    */
-  verifyAmToken: (token) => {
+  verifyKibanaToken: (token) => {
     let decoded = Jwt.verify(token, Config.secret());
     let valid = new Date().getTime() < decoded.expiry;
 
     if (!decoded || !valid) {
-      throw new Error();
+      throw new Error("Kibana token is not valid");
     }
 
     return decoded;
   },
 
   /**
- * Get the Audit Manager token from request
+ * Get the Kibana token from request
  * @param {*} request 
  */
-  hasAmToken: async (request) => {
+  hasKibanaToken: async (request) => {
     return new Promise(function (resolve, reject) {
       let tokenExists = false;
       if (request.state[Config.tokenName()]) {
@@ -44,13 +44,13 @@ module.exports = {
   },
 
   /**
-   * Set the Audit Manager token using the default credentials
+   * Set the Kibana token using the default credentials
    * 
    * @param {*} request 
    * @param {*} h 
    */
-  setAmToken: async (request, h) => {
-    return await AuthScheme.setAmToken(request, h);
+  setKibanaToken: async (request, h) => {
+    return await AuthScheme.setKibanaToken(request, h);
   },
 
   hasAuthToken: async (request) => {

@@ -20,15 +20,15 @@ require('./src/authentication/auth');
 
 module.exports = function (kibana) {
     return new kibana.Plugin({
-        name: 'kibana-mithril',
+        name: 'kibana-corena-authorization',
         require: [],
         uiExports: {
             app: {
                 title: 'Mithril',
                 description: 'Mithril authentication plugin.',
-                main: 'plugins/kibana-mithril/script/app',
+                main: 'plugins/kibana-corena-authorization/script/app',
                 euiIconType: 'securityApp',
-                icon: 'plugins/kibana-mithril/img/icon.svg'
+                icon: 'plugins/kibana-corena-authorization/img/icon.svg'
             }
         },
 

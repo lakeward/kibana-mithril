@@ -41,15 +41,6 @@ describe('Logging', () => {
         Assert.equal(2, calls);
     });
 
-    it('Log 2FA success/fail', () => {
-        Logger.writer(writer());
-
-        Logger.failed2FA('user', source());
-        Logger.succeeded2FA('user', source());
-
-        Assert.equal(2, calls);
-    });
-
     it('Log with X-Forwarded-For header', () => {
         Logger.writer(writer());
         Logger.unauthorized('/api/routes/1.1.1.1', source('1.1.1.1'));
