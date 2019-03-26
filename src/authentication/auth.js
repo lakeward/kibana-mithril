@@ -1,7 +1,13 @@
 /**
- * @author Robin Duda
- *
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ */
+
+/**
  * Authenticates users against configured authentication schemas
+ * 
+ * @author Robin Duda
+ * @author Lauren Ward
+ * 
  */
 
 const Jwt = require("jsonwebtoken");
@@ -23,7 +29,7 @@ module.exports = {
     let valid = new Date().getTime() < decoded.expiry;
 
     if (!decoded || !valid) {
-      throw new Error("Kibana token is not valid");
+      throw new Error(`Kibana token is not valid`);
     }
 
     return decoded;

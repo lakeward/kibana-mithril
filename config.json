@@ -1,9 +1,13 @@
 {
     "authScheme": "acm",
-    "proxy": {
-        "enabled": false,
-        "port": 7575,
-        "remote": "aa-portal-dev.flatironssolutions.com:5601"
+    "acm": {
+        "host": "aa-portal-dev.flatironssolutions.com",
+        "port": "8081",
+        "protocol": "http",
+        "tokenName": "acmToken",
+        "acmPermissionType": "Audit Manager",
+        "redirectUrl": "http://aa-portal-dev.flatironssolutions.com:8081/acmclient/#/login?logout=You%20are%20not%20logged%20in&url=http:%2F%2Faa-portal-dev.flatironssolutions.com:5601%2Fapp%2Fkibana",
+        "userFile": "users.json"
     },
     "authentication": {
         "kbnVersion": "6.6.2",
@@ -18,15 +22,11 @@
             "strictHeader": true,
             "domain": ".flatironssolutions.com"
         },
-        "secret": "O2QaGH4lEba+sUOjNLEE8vGusowB07FXeIcukDG1aY3gdh1Th36C8ykyprhBhkHMkFlu5YKOZvgHxEmiC+PLJA=="
+        "secret": "kibana-corena-authorizatino-secret"
     },
-    "acm": {
-        "host": "aa-portal-dev.flatironssolutions.com",
-        "port": "8081",
-        "protocol": "http",
-        "tokenName": "acmToken",
-        "acmPermissionType": "Audit Manager",
-        "redirectUrl": "http://aa-portal-dev.flatironssolutions.com:8081/acmclient/#/login?logout=You%20are%20not%20logged%20in&url=http:%2F%2Faa-portal-dev.flatironssolutions.com:5601%2Fapp%2Fkibana",
-        "userFile": "users.json"
-    }
+    "proxy": {
+        "enabled": false,
+        "port": 7575,
+        "remote": "aa-portal-dev.flatironssolutions.com:5601"
+    },
 }

@@ -24,8 +24,8 @@ module.exports = function (kibana) {
         require: [],
         uiExports: {
             app: {
-                title: 'Mithril',
-                description: 'Mithril authentication plugin.',
+                title: 'Kibana CORENA Plugin',
+                description: 'Kibana CORENA Plugin.',
                 main: 'plugins/kibana-corena-authorization/script/app',
                 euiIconType: 'securityApp',
                 icon: 'plugins/kibana-corena-authorization/img/icon.svg'

@@ -1,8 +1,13 @@
 /**
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ */
+
+/**
  * @author Robin Duda
+ * @author Lauren Ward
  *
- * Simple configuration loader, loads the file from disk
- * on inclusion.
+ * Configuration loader loads file from disk.
+ * 
  */
 
 const fs = require('fs');
@@ -12,11 +17,6 @@ const PACKAGE_PATH = require('path').resolve(__dirname, '../package.json');
 
 let config;
 let pkg;
-
-function load() {
-    config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-    pkg = JSON.parse(fs.readFileSync(PACKAGE_PATH, 'utf-8'));
-}
 
 load();
 
@@ -46,39 +46,6 @@ module.exports = {
     },
 
     get: () => config,
-    
-    proxyEnabled: () => {
-        return config['proxy']['enabled'];
-    },
-
-    proxyPort: () => {
-        return config['proxy']['port'];
-    },
-
-    proxyRemote: () => {
-        return config['proxy']['remote'];
-    },
-
-    authScheme: () => {
-        return config['authScheme'];
-    },
-
-    secret: () => {
-        return config['authentication']['secret'];
-    },
-
-    setSecret: (secret) => {
-        config['authentication']['secret'] = secret;
-        module.exports.save();
-    },
-
-    cookie: () => {
-        return config['authentication']['cookie'];
-    },
-
-    version: () => {
-        return config['authentication']['kbnVersion'];
-    },
 
     pluginVersion: () => {
         return pkg['version'];
@@ -87,9 +54,9 @@ module.exports = {
     pluginName: () => {
         return pkg['name'];
     },
-
-    tokenName: () => {
-        return config['authentication']['tokenName'];
+    
+    authScheme: () => {
+        return config['authScheme'];
     },
 
     acmHost: () => {
@@ -116,4 +83,41 @@ module.exports = {
         return config['acm']['acmPermissionType'];
     },
 
+    secret: () => {
+        return config['authentication']['secret'];
+    },
+
+    setSecret: (secret) => {
+        config['authentication']['secret'] = secret;
+        module.exports.save();
+    },
+
+    cookie: () => {
+        return config['authentication']['cookie'];
+    },
+
+    version: () => {
+        return config['authentication']['kbnVersion'];
+    },
+
+    tokenName: () => {
+        return config['authentication']['tokenName'];
+    },
+
+    proxyEnabled: () => {
+        return config['proxy']['enabled'];
+    },
+
+    proxyPort: () => {
+        return config['proxy']['port'];
+    },
+
+    proxyRemote: () => {
+        return config['proxy']['remote'];
+    },
 };
+
+function load() {
+    config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    pkg = JSON.parse(fs.readFileSync(PACKAGE_PATH, 'utf-8'));
+}

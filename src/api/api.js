@@ -1,7 +1,13 @@
 /**
- * @author Robin Duda
- *
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ */
+
+/**
  * Adds the server API to an existing Hapi server object.
+ * 
+ * @author Robin Duda
+ * @author Lauren Ward
+ * 
  */
 
 const Config = require('../config');
@@ -12,15 +18,16 @@ const Logger = require('../logger');
 module.exports = {
 
     /**
-     * Adds routing for a Hapi server to implement the 'Server API'.
+     * Adds routing for a Hapi server
      *
-     * @param server Hapi server to register routes on.
+     * @param {Object} server Hapi server to register routes on.
      */
     register: async (server) => {
         let basePath = server.config().get('server.basePath');
 
         /**
-         *  Logout route 
+         *  Logout route clears all cookies
+         *  
          */
         server.route({
             method: 'POST',
@@ -28,7 +35,6 @@ module.exports = {
 
             handler(request, h) {
                 h.unstate(Config.tokenName(), Config.cookie());
-                //TODO: Decide if we need a different cookie object for ACM
                 h.unstate(Config.acmTokenName(), Config.cookie());
                 return h.response().code(200);
             }
@@ -47,8 +53,6 @@ module.exports = {
         });
 
 
-
-        // Login based scheme as a wrapper for JWT scheme.
         /**
          * CORENA authentication scheme that requires an acmToken or ACTIVITI_REMEMBER_ME token.
          * If either token exists, schema validates the token and generates Kibana token which is used for 
@@ -78,7 +82,7 @@ module.exports = {
                                 return h.authenticated({credentials: credentials});
 
                             } else {
-                                throw new Error("acmToken required to authenticate with authScheme='amc'");                              
+                                throw new Error(`acmToken required to authenticate with authScheme='${Config.authScheme()}'`);                              
                             }    
 
                         } else {

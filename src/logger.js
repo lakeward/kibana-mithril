@@ -1,8 +1,15 @@
 /**
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ */
+
+/**
+ * Logger utility
+ * 
  * @author Robin Duda
+ * @author Lauren Ward
  *
- * Simple configuration loader, loads the file from disk
- * on inclusion.
+ * 
+ * 
  */
 
 const config = require('./config');
@@ -24,45 +31,30 @@ module.exports = {
     },
 
     /**
-    * @param line the text to log.
-    * @param level optional - severity of the event, [warning, info, error]
+    * @param {string} line the text to log.
+    * @param {string} level optional - severity of the event, [warning, info, error]
     */
     log: (line, level) => {
         level = level || 'info';
         writer.log([level, `plugin:${plugin}@${version}`], line);
     },
 
-    /**
-     * Call when the plugin has started.
-     */
     started: () => {
         log('authentication plugin enabled.');
     },
 
-    /**
-     * Call when an authentication attempt has been  made.
-     */
     succeededAuthentication: (user, source) => {
         log(`authentication succeeded for user ${user} from ${ip(source)}`);
     },
 
-    /**
-     * Call when an authentication attempt has been  made.
-     */
     failedAuthentication: (user, source) => {
         log(`authentication failed for user ${user} from ${ip(source)}`, WARNING);
     },
 
-    /**
-     * Call when a request is blocked because of missing authorization.
-     */
     unauthorized: (path, source) => {
         log(`blocked unauthorized access to ${path} from ${ip(source)}`);
     },
 
-    /**
-    * Call when a new HMAC key is generated.
-    */
     generatedSecret: () => {
         log(`generated random secret for signing tokens.`);
     }

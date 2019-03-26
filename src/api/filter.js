@@ -1,14 +1,23 @@
 /**
- * @author Robin Duda
- *
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ */
+
+/**
+ * 
  * Adds proxying and filtering to an existing Hapi server
  * in order to be able to modify requests based on
- * authorization before they are routed.
+ * authorization before they are routed. 
+ * 
+ * This implementation is still in an experimental mode.
+ * 
+ * @author Robin Duda
+ * @author Lauren Ward
  */
 
 const Querystring = require("querystring");
 const Express = require("express");
 const Proxy = require("express-http-proxy");
+
 const Auth = require("../authentication/auth");
 const Config = require("../config");
 const Logger = require("../logger");
@@ -46,13 +55,19 @@ module.exports = {
   },
 
   /**
-   * Handles the filtering of a search endpoint in the kibana server API.
-   * User group membership are matched against the queried index.
+   * 
    *
    * @param req the request to be inspected contains user groups and requested index.
-   * @returns {*}
+   * @returns {Object}
    */
-  handleSearch: function(requestBody, request) {
+  /**
+   * Handles the filtering of a search endpoint in the kibana server API.
+   * User group membership are matched against the queried index.
+   * 
+   * @param {Object} requestBody 
+   * @param {Object} request 
+   */
+  handleSearch: (requestBody, request) => {
     let query = getQueryList(requestBody);
     let authorized = true;
     let response = "";
@@ -60,10 +75,8 @@ module.exports = {
     try {
       let cookies = getCookies(request);
       let kibanaToken = cookies[Config.tokenName()];
-
-      const authorization = Auth.verifyKibanaToken(kibanaToken);
-
-      Logger.log(query);
+      let authorization = Auth.verifyKibanaToken(kibanaToken);
+      
       for (let i = 0; i < query.length; i++) {
         const queryItem = JSON.parse(query[i]);
         Logger.log(queryItem.index);
