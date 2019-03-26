@@ -1,13 +1,13 @@
 /**
- * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc.,
  */
 
 /**
  * Authenticates users against configured authentication schemas
- * 
+ *
  * @author Robin Duda
  * @author Lauren Ward
- * 
+ *
  */
 
 const Jwt = require("jsonwebtoken");
@@ -18,13 +18,12 @@ const Logger = require("../logger");
 let AuthScheme = require("./" + Config.authScheme());
 
 module.exports = {
-
   /**
    * Verifies the validity of a token.
    * @param token to be verified.
    * @return Boolean
    */
-  verifyKibanaToken: (token) => {
+  verifyKibanaToken: token => {
     let decoded = Jwt.verify(token, Config.secret());
     let valid = new Date().getTime() < decoded.expiry;
 
@@ -36,11 +35,11 @@ module.exports = {
   },
 
   /**
- * Get the Kibana token from request
- * @param {*} request 
- */
-  hasKibanaToken: async (request) => {
-    return new Promise(function (resolve, reject) {
+   * Get the Kibana token from request
+   * @param {*} request
+   */
+  hasKibanaToken: async request => {
+    return new Promise(function(resolve, reject) {
       let tokenExists = false;
       if (request.state[Config.tokenName()]) {
         tokenExists = true;
@@ -51,27 +50,27 @@ module.exports = {
 
   /**
    * Set the Kibana token using the default credentials
-   * 
-   * @param {*} request 
-   * @param {*} h 
+   *
+   * @param {*} request
+   * @param {*} h
    */
   setKibanaToken: async (request, h) => {
     return await AuthScheme.setKibanaToken(request, h);
   },
 
-  hasAuthToken: async (request) => {
+  hasAuthToken: async request => {
     return await AuthScheme.hasToken(request);
   },
 
-  getAuthToken: async (request) => {
+  getAuthToken: async request => {
     return await AuthScheme.getToken(request);
   },
 
-  verifyAuthToken: async (request) => {
+  verifyAuthToken: async request => {
     return await AuthScheme.verifyToken(request);
   },
 
-  verifyAuthPermissions: async (request) => {
+  verifyAuthPermissions: async request => {
     return await AuthScheme.verifyPermissions(request);
   }
 };

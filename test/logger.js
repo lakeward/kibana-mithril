@@ -4,53 +4,49 @@
  * Tests the loading and reading of the configuration file.
  */
 
-const Assert = require('assert');
-const Logger = require('../src/logger');
+const Assert = require("assert");
+const Logger = require("../src/logger");
 
 function source(forwarded) {
-    return {
-        ip: '127.0.0.1',
-        forwarded: forwarded
-     }
+  return {
+    ip: "127.0.0.1",
+    forwarded: forwarded
+  };
 }
 
 let calls = 0;
 
-
 function writer() {
-    return {
-        log: (line) => {
-            calls += 1;
-        }
+  return {
+    log: line => {
+      calls += 1;
     }
+  };
 }
 
+describe("Logging", () => {
+  beforeEach(() => {
+    calls = 0;
+  });
 
-describe('Logging', () => {
+  it("Log authentication success/fail", () => {
+    Logger.writer(writer());
 
-    beforeEach(() => {
-        calls = 0;
-    });
+    Logger.succeededAuthentication("user", source());
+    Logger.failedAuthentication("user", source());
 
-    it('Log authentication success/fail', () => {
-        Logger.writer(writer());
+    Assert.equal(2, calls);
+  });
 
-        Logger.succeededAuthentication('user', source());
-        Logger.failedAuthentication('user', source());
+  it("Log with X-Forwarded-For header", () => {
+    Logger.writer(writer());
+    Logger.unauthorized("/api/routes/1.1.1.1", source("1.1.1.1"));
+    Assert.equal(1, calls);
+  });
 
-        Assert.equal(2, calls);
-    });
-
-    it('Log with X-Forwarded-For header', () => {
-        Logger.writer(writer());
-        Logger.unauthorized('/api/routes/1.1.1.1', source('1.1.1.1'));
-        Assert.equal(1, calls);
-    });
-
-    it('Log blocked access', () => {
-        Logger.writer(writer());
-        Logger.unauthorized('/api/routes/1.1.1.1', source());
-        Assert.equal(1, calls);
-    });
-
+  it("Log blocked access", () => {
+    Logger.writer(writer());
+    Logger.unauthorized("/api/routes/1.1.1.1", source());
+    Assert.equal(1, calls);
+  });
 });

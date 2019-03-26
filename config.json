@@ -28,5 +28,5 @@
         "enabled": false,
         "port": 7575,
         "remote": "aa-portal-dev.flatironssolutions.com:5601"
-    },
+    }
 }

@@ -5,46 +5,16 @@
  */
 
 const Assert = require("assert");
-const Hapi = require("hapi");
-const Request = require("request");
-const API = require("../../src/api/api");
-const index = require("../../index");
-//require('../mock/ldap');
-const Auth = require("../../src/authentication/auth");
 
-const PORT = 5810;
+const Config = require("../../src/config");
+const Acm = require("../../src/authentication/auth");
 
-function url(resource) {
-  return "http://127.0.0.1:" + PORT + "/" + resource;
-}
-
-describe("Server API Routing", () => {
+describe("ACM API tests", () => {
   before(async () => {
-    const server = new Hapi.Server({
-      host: "localhost",
-      port: PORT
-    });
-
-    let plugin = index({
-      Plugin: class {
-        constructor(plugin) {
-          this.init = plugin.init;
-        }
-      }
-    });
-
-    // decorated by kibana.
-    server.config = () => {
-      return {
-        get: key => {
-          return "";
-        }
-      };
-    };
-
-    await plugin.init(server, {});
-    await server.start();
+    await Acm.authenticate("acm-admin", "secret");
   });
+
+  //
 
   // it('Should deliver the login page on /corena', (done) => {
   //     Request

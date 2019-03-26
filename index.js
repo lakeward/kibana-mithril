@@ -10,39 +10,38 @@
  * so that the request may be processed in a context-aware manner.
  */
 
-const Filter = require('./src/api/filter');
-const API = require('./src/api/api');
-const Config = require('./src/config').load('authentication');
-const Logger = require('./src/logger');
+const Filter = require("./src/api/filter");
+const API = require("./src/api/api");
+const Config = require("./src/config").load("authentication");
+const Logger = require("./src/logger");
 
-require('./src/authentication/auth');
+require("./src/authentication/auth");
 
+module.exports = function(kibana) {
+  return new kibana.Plugin({
+    name: "kibana-corena-authorization",
+    require: [],
+    uiExports: {
+      app: {
+        title: "Kibana CORENA Plugin",
+        description: "Kibana CORENA Plugin.",
+        main: "plugins/kibana-corena-authorization/script/app",
+        euiIconType: "securityApp",
+        icon: "plugins/kibana-corena-authorization/img/icon.svg"
+      }
+    },
 
-module.exports = function (kibana) {
-    return new kibana.Plugin({
-        name: 'kibana-corena-authorization',
-        require: [],
-        uiExports: {
-            app: {
-                title: 'Kibana CORENA Plugin',
-                description: 'Kibana CORENA Plugin.',
-                main: 'plugins/kibana-corena-authorization/script/app',
-                euiIconType: 'securityApp',
-                icon: 'plugins/kibana-corena-authorization/img/icon.svg'
-            }
-        },
+    config(Joi) {
+      return Joi.object({
+        enabled: Joi.boolean().default(true)
+      }).default();
+    },
 
-        config(Joi) {
-            return Joi.object({
-                enabled: Joi.boolean().default(true),
-            }).default()
-        },
-
-        init: async function(server, options) {
-            Logger.writer(server);
-            Filter.proxy();
-            await API.register(server);
-            Logger.started();
-        }
-    });
+    init: async function(server, options) {
+      Logger.writer(server);
+      Filter.proxy();
+      await API.register(server);
+      Logger.started();
+    }
+  });
 };

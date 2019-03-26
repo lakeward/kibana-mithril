@@ -1,15 +1,15 @@
 /**
- * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc., 
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc.,
  */
 
 /**
- * 
+ *
  * Adds proxying and filtering to an existing Hapi server
  * in order to be able to modify requests based on
- * authorization before they are routed. 
- * 
+ * authorization before they are routed.
+ *
  * This implementation is still in an experimental mode.
- * 
+ *
  * @author Robin Duda
  * @author Lauren Ward
  */
@@ -55,7 +55,7 @@ module.exports = {
   },
 
   /**
-   * 
+   *
    *
    * @param req the request to be inspected contains user groups and requested index.
    * @returns {Object}
@@ -63,9 +63,9 @@ module.exports = {
   /**
    * Handles the filtering of a search endpoint in the kibana server API.
    * User group membership are matched against the queried index.
-   * 
-   * @param {Object} requestBody 
-   * @param {Object} request 
+   *
+   * @param {Object} requestBody
+   * @param {Object} request
    */
   handleSearch: (requestBody, request) => {
     let query = getQueryList(requestBody);
@@ -76,7 +76,7 @@ module.exports = {
       let cookies = getCookies(request);
       let kibanaToken = cookies[Config.tokenName()];
       let authorization = Auth.verifyKibanaToken(kibanaToken);
-      
+
       for (let i = 0; i < query.length; i++) {
         const queryItem = JSON.parse(query[i]);
         Logger.log(queryItem.index);
