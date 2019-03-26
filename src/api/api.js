@@ -52,6 +52,17 @@ module.exports = {
     });
 
     /**
+     * Base query only used for Mocha testing 
+     */
+    server.route({
+      method: "GET",
+      path: "/corena",
+      handler(request, h) {
+        return h.response().code(200);
+      }
+    });
+
+    /**
      * CORENA authentication scheme that requires an acmToken or ACTIVITI_REMEMBER_ME token.
      * If either token exists, schema validates the token and generates Kibana token which is used for
      * all other requests during the session.
@@ -86,6 +97,8 @@ module.exports = {
           } catch (e) {
             Logger.log(e);
             h.unstate(Config.tokenName(), Config.cookie());
+            h.unstate(Config.acmTokenName(), Config.cookie());
+
             if (Config.authScheme() === "acm") {
               return h.redirect(Config.acmRedirectUrl()).takeover();
             } else if (Config.authScheme() === "insight") {
@@ -116,6 +129,7 @@ module.exports = {
       server.auth.settings.default = null;
 
       server.auth.default("corena");
+
     } catch (err) {
       throw err;
     }

@@ -178,14 +178,13 @@ module.exports = {
         Accept: "application/json"
       }
     });
-
-    Logger.log(response);
-    if (response.status !== 200) {
+    
+    if (response.status !== 201) {
       throw new Error(
-        `acmToken was not valid; Returned error '${response.statusText}'`
+        `Unable to authenticate; ACM returned error '${response.statusText}'`
       );
     } else {
-      return true;
+      return response.json();
     }
   }
 };

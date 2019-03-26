@@ -5,68 +5,93 @@
  */
 
 const Assert = require("assert");
+const Hapi = require("hapi");
+const Request = require("request");
+const Expect = require("expect.js");
 
+const index = require("../../index");
 const Config = require("../../src/config");
-const Acm = require("../../src/authentication/auth");
+const Acm = require("../../src/authentication/acm");
+const Logger = require("../../src/logger");
 
-describe("ACM API tests", () => {
+const PORT = 5810;
+
+let server = undefined;
+let acmToken = undefined;
+let request = undefined;
+
+function url(resource) {
+  return "http://127.0.0.1:" + PORT + resource;
+}
+
+function getAcmToken(token) {
+  return "acmToken=" + token.token;
+}
+
+describe("ACM Utilities", () => {
   before(async () => {
-    await Acm.authenticate("acm-admin", "secret");
+    server = new Hapi.Server({
+      host: "127.0.0.1",
+      port: PORT
+    });
+
+    let plugin = index({
+      Plugin: class {
+        constructor(plugin) {
+          this.init = plugin.init;
+        }
+      }
+    });
+
+    // decorated by kibana.
+    server.config = () => {
+      return {
+        get: key => {
+          return "";
+        }
+      };
+    };
+
+    await plugin.init(server, {});
+    await server.start();
+    acmToken = await Acm.authenticate("acm-admin", "secret");
   });
 
-  //
+  after(async () => {
+    await server.stop();
+  });
 
-  // it('Should deliver the login page on /corena', (done) => {
-  //     Request
-  //         .get(url('/app/kibana'))
-  //         .on('response', (response) => {
-  //             Assert.equal(response.statusCode, 200);
-  //             done();
-  //         });
-  // });
+  it("Generating request object.", done => {
+    Request.get({
+      uri: url("/corena"),
+      headers: {
+        Cookie: getAcmToken(acmToken)
+      }
+    }).on("response", response => {
+      request = response.request;
+      Assert.equal(response.statusCode, 200);
+      done();
+    });
+  });
 
-  // it('Should accept requests with valid authentication token.', (done) => {
-  //     Request.cookie('');
+  it("Request has ACM token", async () => {
+    request.state = { acmToken: acmToken };
+    let hasToken = await Acm.hasToken(request);
+    Assert.equal(true,hasToken);
+  });
 
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: "token=" + Authentication.signToken('user', ['group1'])
-  //             }
-  //         }).on('response', (response) => {
-  //             Assert.equal(response.statusCode, 200);
-  //             done();
-  //     });
-  // });
+  it("ACM should create ACM token", async () => {
+    let acmToken = await Acm.authenticate("acm-admin", "secret");
+    Assert.notEqual(acmToken.token, undefined);
+  });
 
-  // it('Should redirect with 302 on authentication invalid.', (done) => {
-  //     Request.cookie('');
-
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: "token=invalid"
-  //             }
-  //         }).on('response', (response) => {
-  //         Assert.equal(response.statusCode, 302);
-  //         done();
-  //     });
-  // });
-
-  // it('Should redirect with 302 on authentication missing.', (done) => {
-  //     Request.cookie('');
-
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: ""
-  //             }
-  //         }).on('response', (response) => {
-  //         Assert.equal(response.statusCode, 302);
-  //         done();
-  //     });
-  // });
+  it("ACM should throw Unauthorized error", async () => {
+    try {
+      let acmToken = await Acm.authenticate("acm-admin", "secret2");
+    } catch (e) {
+      Expect(e.message).to.equal(
+        "Unable to authenticate; ACM returned error 'Unauthorized'"
+      );
+    }
+  });
 });

@@ -7,21 +7,30 @@
 const Assert = require("assert");
 const Hapi = require("hapi");
 const Request = require("request");
+
 const API = require("../../src/api/api");
 const index = require("../../index");
-//require('../mock/ldap');
 const Auth = require("../../src/authentication/auth");
+const Acm = require("../../src/authentication/acm");
 
 const PORT = 5810;
 
+let server = undefined;
+let acmToken = undefined;
+let request = undefined;
+
 function url(resource) {
-  return "http://127.0.0.1:" + PORT + "/" + resource;
+  return "http://127.0.0.1:" + PORT + resource;
+}
+
+function getAcmToken(token) {
+  return "acmToken=" + token.token;
 }
 
 describe("Server API Routing", () => {
   before(async () => {
-    const server = new Hapi.Server({
-      host: "localhost",
+    server = new Hapi.Server({
+      host: "127.0.0.1",
       port: PORT
     });
 
@@ -44,59 +53,55 @@ describe("Server API Routing", () => {
 
     await plugin.init(server, {});
     await server.start();
+    acmToken = await Acm.authenticate("acm-admin", "secret");
   });
 
-  // it('Should deliver the login page on /corena', (done) => {
-  //     Request
-  //         .get(url('/app/kibana'))
-  //         .on('response', (response) => {
-  //             Assert.equal(response.statusCode, 200);
-  //             done();
-  //         });
-  // });
+  after(async () => {
+    await server.stop();
+  });
 
-  // it('Should accept requests with valid authentication token.', (done) => {
-  //     Request.cookie('');
+  it("Logout requires a valid token.", done => {
+    Request.cookie("");
 
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: "token=" + Authentication.signToken('user', ['group1'])
-  //             }
-  //         }).on('response', (response) => {
-  //             Assert.equal(response.statusCode, 200);
-  //             done();
-  //     });
-  // });
+    Request.post({
+      uri: url("/corena/logout"),
+      headers: {
+        Cookie: getAcmToken(acmToken)
+      }
+    }).on("response", response => {
+      Assert.equal(response.statusCode, 200);
+      done();
+    });
+  });
 
-  // it('Should redirect with 302 on authentication invalid.', (done) => {
-  //     Request.cookie('');
+  it("Should redirect with 302 on authentication missing.", done => {
+    Request.post({
+      uri: url("/corena/logout"),
+      headers: {
+        Cookie: ""
+      }
+    }).on("response", response => {
+      Assert.equal(response.statusCode, 302);
+      done();
+    });
+  });
 
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: "token=invalid"
-  //             }
-  //         }).on('response', (response) => {
-  //         Assert.equal(response.statusCode, 302);
-  //         done();
-  //     });
-  // });
-
-  // it('Should redirect with 302 on authentication missing.', (done) => {
-  //     Request.cookie('');
-
-  //     Request
-  //         .post({
-  //             uri: url('/corena/logout'),
-  //             headers: {
-  //                 Cookie: ""
-  //             }
-  //         }).on('response', (response) => {
-  //         Assert.equal(response.statusCode, 302);
-  //         done();
-  //     });
-  // });
+  it("Should return group membership.", done => {
+    Request.get({
+      uri: url("/corena/groups"),
+      headers: {
+        Cookie: getAcmToken(acmToken)
+      }
+    })
+      .on("response", response => {
+        Assert.equal(response.statusCode, 200);
+      })
+      .on("data", data => {
+        Assert.equal(
+          data.toString(),
+          '{"groups":["Acmadministrators","ACM","DM","PP"]}'
+        );
+        done();
+      });
+  });
 });
