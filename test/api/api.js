@@ -1,7 +1,12 @@
 /**
- * @author Robin Duda
- *
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved.
+ */
+
+/**
  * Tests routing added by the Server API.
+ * 
+ * @author Lauren Ward
+ *
  */
 
 const Assert = require("assert");
@@ -9,64 +14,24 @@ const Hapi = require("hapi");
 const Request = require("request");
 
 const API = require("../../src/api/api");
-const index = require("../../index");
-const Auth = require("../../src/authentication/auth");
-const Acm = require("../../src/authentication/acm");
-
-const PORT = 5810;
-
-let server = undefined;
-let acmToken = undefined;
-let request = undefined;
-
-function url(resource) {
-  return "http://127.0.0.1:" + PORT + resource;
-}
-
-function getAcmToken(token) {
-  return "acmToken=" + token.token;
-}
+const HapiTestServer = require("../../test/util/hapitestserver.js");
 
 describe("Server API Routing", () => {
   before(async () => {
-    server = new Hapi.Server({
-      host: "127.0.0.1",
-      port: PORT
-    });
-
-    let plugin = index({
-      Plugin: class {
-        constructor(plugin) {
-          this.init = plugin.init;
-        }
-      }
-    });
-
-    // decorated by kibana.
-    server.config = () => {
-      return {
-        get: key => {
-          return "";
-        }
-      };
-    };
-
-    await plugin.init(server, {});
-    await server.start();
-    acmToken = await Acm.authenticate("acm-admin", "secret");
+    await HapiTestServer.start();
   });
 
   after(async () => {
-    await server.stop();
+    await HapiTestServer.stop();
   });
 
   it("Logout requires a valid token.", done => {
     Request.cookie("");
 
     Request.post({
-      uri: url("/corena/logout"),
+      uri: HapiTestServer.url("/corena/logout"),
       headers: {
-        Cookie: getAcmToken(acmToken)
+        Cookie: HapiTestServer.getAcmCookieEntry(HapiTestServer.getAcmToken())
       }
     }).on("response", response => {
       Assert.equal(response.statusCode, 200);
@@ -76,7 +41,7 @@ describe("Server API Routing", () => {
 
   it("Should redirect with 302 on authentication missing.", done => {
     Request.post({
-      uri: url("/corena/logout"),
+      uri: HapiTestServer.url("/corena/logout"),
       headers: {
         Cookie: ""
       }
@@ -88,9 +53,9 @@ describe("Server API Routing", () => {
 
   it("Should return group membership.", done => {
     Request.get({
-      uri: url("/corena/groups"),
+      uri: HapiTestServer.url("/corena/groups"),
       headers: {
-        Cookie: getAcmToken(acmToken)
+        Cookie: HapiTestServer.getAcmCookieEntry(HapiTestServer.getAcmToken())
       }
     })
       .on("response", response => {

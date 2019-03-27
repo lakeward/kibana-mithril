@@ -1,7 +1,13 @@
 /**
- * @author Robin Duda
- *
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved.
+ */
+
+/**
  * Tests the loading and reading of the configuration file.
+ * 
+ * @author Robin Duda
+ * @author Lauren Ward
+ *
  */
 
 const Assert = require("assert");

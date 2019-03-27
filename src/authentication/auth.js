@@ -1,5 +1,5 @@
 /**
- * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved. Flatirons Solutions, Inc.,
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved.
  */
 
 /**

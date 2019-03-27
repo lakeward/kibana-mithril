@@ -1,11 +1,19 @@
 /**
+ * @copyright (c) 2019 Flatirons Solutions Inc., All Rights Reserved.
+ */
+
+/**
+ * Tests logging calls
+ * 
  * @author Robin Duda
+ * @author Lauren Ward
  *
- * Tests the loading and reading of the configuration file.
  */
 
 const Assert = require("assert");
 const Logger = require("../src/logger");
+
+let calls = 0;
 
 function source(forwarded) {
   return {
@@ -13,8 +21,6 @@ function source(forwarded) {
     forwarded: forwarded
   };
 }
-
-let calls = 0;
 
 function writer() {
   return {
