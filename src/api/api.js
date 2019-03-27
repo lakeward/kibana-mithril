@@ -56,7 +56,7 @@ module.exports = {
      */
     server.route({
       method: "GET",
-      path: "/corena",
+      path: "/corena/test",
       handler(request, h) {
         return h.response().code(200);
       }

@@ -4,7 +4,7 @@
 
 /**
  * Tests ACM calls
- * 
+ *
  * @author Lauren Ward
  *
  */
@@ -12,7 +12,6 @@
 const Assert = require("assert");
 const Hapi = require("hapi");
 const Request = require("request");
-const Expect = require("expect.js");
 
 const HapiTestServer = require("../../test/util/hapitestserver.js");
 const Acm = require("../../src/authentication/acm");
@@ -28,25 +27,71 @@ describe("ACM Utilities", () => {
     await HapiTestServer.stop();
   });
 
-  it("Request has ACM token", async () => {
-    let request = HapiTestServer.getRequest();
+  it("ACM: Has acmToken in request", async () => {
+    let request = await HapiTestServer.getRequest();
     request.state = { acmToken: HapiTestServer.getAcmToken() };
     let hasToken = await Acm.hasToken(request);
-    Assert.equal(true,hasToken);
+    Assert.equal(hasToken, true);
   });
 
-  it("ACM should create ACM token", async () => {
+  it("ACM: Valid authentication request", async () => {
     let acmToken = await Acm.authenticate("acm-admin", "secret");
     Assert.notEqual(acmToken.token, undefined);
   });
 
-  it("ACM should throw Unauthorized error", async () => {
+  it("ACM: Invalid authentication request", async () => {
     try {
       let acmToken = await Acm.authenticate("acm-admin", "secret2");
     } catch (e) {
-      Expect(e.message).to.equal(
+      Assert.equal(e.message,
         "Unable to authenticate; ACM returned error 'Unauthorized'"
       );
     }
+  });
+
+  it("ACM: Verify valid acmToken in request", async () => {
+    let request = await HapiTestServer.getRequest();
+
+    request.state = {};
+    request.state[Config.acmTokenName()] = HapiTestServer.getAcmToken().token;
+
+    let verifiedToken = await Acm.verifyToken(request);
+
+    Assert.equal(verifiedToken, true);
+  });
+
+  it("ACM: Get acmToken from request.", async () => {
+    let request = await HapiTestServer.getRequest();
+
+    request.state = {};
+    request.state[Config.acmTokenName()] = HapiTestServer.getAcmToken().token;
+
+    let verifiedToken = await Acm.getToken(request);
+
+    Assert.notEqual(verifiedToken, null);
+  });
+
+  it("ACM: Verify ACM permissions from request.", async () => {
+    let request = await HapiTestServer.getRequest();
+
+    request.state = {};
+    request.state[Config.acmTokenName()] = HapiTestServer.getAcmToken().token;
+
+    let verifiedPermissions = await Acm.verifyPermissions(request);
+    
+    Assert.equal(verifiedPermissions, true);
+  });
+
+  it("ACM: set kibanaToken on request.", async () => {
+    let request = await HapiTestServer.getRequest();
+    let handler = HapiTestServer.getMockHandler();
+
+    request.state = {};
+    request.state[Config.acmTokenName()] = HapiTestServer.getAcmToken().token;
+
+    let verifiedToken = await Acm.setKibanaToken(request, handler);
+
+    Assert.notEqual(handler.tokenName, null);
+    Assert.notEqual(handler.token,null);
   });
 });

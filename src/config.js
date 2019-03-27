@@ -91,7 +91,7 @@ module.exports = {
     return config["authentication"]["secret"];
   },
 
-  setSecret: secret => {
+  setSecret: (secret) => {
     config["authentication"]["secret"] = secret;
     module.exports.save();
   },

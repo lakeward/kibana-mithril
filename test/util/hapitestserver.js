@@ -7,7 +7,7 @@
  * This should be written as a class to force instantiation. However, I couldn't figure
  * out how to do that in the available time. For now, you must call the start() method
  * before calling any of the subsequent methods.
- * 
+ *
  * @author Lauren Ward
  *
  */
@@ -53,7 +53,7 @@ module.exports = {
     await server.start();
     acmToken = await Acm.authenticate("acm-admin", "secret");
   },
-  
+
   stop: async () => {
     await server.stop();
   },
@@ -68,16 +68,33 @@ module.exports = {
 
   getAcmCookieEntry: () => {
     return "acmToken=" + acmToken.token;
-  }, 
+  },
 
   getRequest: async () => {
-    Request.get({
-      uri: module.exports.url("/corena"),
-      headers: {
-        Cookie: module.exports.getAcmToken(acmToken)
-      }
-    }).on("response", response => {
-      return response.request;
+    return new Promise((resolve, reject) => {
+      Request.get({
+        uri: module.exports.url("/corena/test"),
+        headers: {
+          Cookie: module.exports.getAcmToken(acmToken)
+        }
+      }).on("response", response => {
+        return resolve(response.request);
+      });
     });
+  },
+  
+  getMockHandler: () => {
+    return {
+      tokenName: undefined,
+      token: undefined,
+      config: undefined,
+      state: function(tokenName, token, config) {
+        this.tokenName = tokenName;
+        this.token = token;
+        this.config = config;
+      }
+    };
   }
+
+
 };

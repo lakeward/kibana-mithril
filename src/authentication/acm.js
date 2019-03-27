@@ -51,7 +51,7 @@ module.exports = {
         request.headers.cookie = `${Config.tokenName()}=${token}`;
       }
 
-      resolve();
+      resolve(true);
     });
   },
 
@@ -60,7 +60,7 @@ module.exports = {
    *
    * @param request the http request object
    */
-  hasToken: async request => {
+  hasToken: async (request) => {
     return new Promise(function(resolve, reject) {
       let tokenExists = false;
       if (request.state[Config.acmTokenName()]) {
@@ -75,7 +75,7 @@ module.exports = {
    *
    * @param request the Hapi http request object
    */
-  getToken: async request => {
+  getToken: async (request) => {
     return new Promise(function(resolve, reject) {
       resolve(request.state[Config.acmTokenName()]);
     });
@@ -86,7 +86,7 @@ module.exports = {
    *
    * @param {Object} request the Hapi http request object
    */
-  verifyToken: async request => {
+  verifyToken: async (request) => {
     let acmToken = await module.exports.getToken(request);
     let response = await Fetch(urlAuth, {
       method: "put",
@@ -113,7 +113,7 @@ module.exports = {
    *
    * @param {Object} request the http request object
    */
-  verifyPermissions: async request => {
+  verifyPermissions: async (request) => {
     let acmToken = await module.exports.getToken(request);
     let response = await Fetch(urlUrlVerifyPermission, {
       method: "get",
@@ -138,7 +138,7 @@ module.exports = {
   /**
    * @param {Object} request the http request object
    */
-  verifyPermissions: async request => {
+  verifyPermissions: async (request) => {
     let acmToken = await module.exports.getToken(request);
     let response = await Fetch(urlUrlVerifyPermission, {
       method: "get",

@@ -25,7 +25,7 @@ describe("Server API Routing", () => {
     await HapiTestServer.stop();
   });
 
-  it("Logout requires a valid token.", done => {
+  it("API: Logout requires a valid token.", done => {
     Request.cookie("");
 
     Request.post({
@@ -39,11 +39,10 @@ describe("Server API Routing", () => {
     });
   });
 
-  it("Should redirect with 302 on authentication missing.", done => {
+  it("API: Missing authentication POST should redirect with 302 code.", done => {
     Request.post({
       uri: HapiTestServer.url("/corena/logout"),
       headers: {
-        Cookie: ""
       }
     }).on("response", response => {
       Assert.equal(response.statusCode, 302);
@@ -51,7 +50,18 @@ describe("Server API Routing", () => {
     });
   });
 
-  it("Should return group membership.", done => {
+  it("API: Missing authentication GET should redirect with 200 code.", done => {
+    Request.get({
+      uri: HapiTestServer.url("/corena/test"),
+      headers: {
+      }
+    }).on("response", response => {
+      Assert.equal(response.statusCode, 200);
+      done();
+    });
+  });
+
+  it("API: Successful group membership request.", done => {
     Request.get({
       uri: HapiTestServer.url("/corena/groups"),
       headers: {

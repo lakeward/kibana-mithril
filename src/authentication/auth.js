@@ -3,7 +3,9 @@
  */
 
 /**
- * Authenticates users against configured authentication schemas
+ * Authenticates users against configured authentication schemas. This module
+ * essentially provides an abstraction layer in front of a particular 
+ * authentication scheme.
  *
  * @author Robin Duda
  * @author Lauren Ward
@@ -23,7 +25,7 @@ module.exports = {
    * @param token to be verified.
    * @return Boolean
    */
-  verifyKibanaToken: token => {
+  verifyKibanaToken: (token) => {
     let decoded = Jwt.verify(token, Config.secret());
     let valid = new Date().getTime() < decoded.expiry;
 
@@ -38,7 +40,7 @@ module.exports = {
    * Get the Kibana token from request
    * @param {*} request
    */
-  hasKibanaToken: async request => {
+  hasKibanaToken: async (request) => {
     return new Promise(function(resolve, reject) {
       let tokenExists = false;
       if (request.state[Config.tokenName()]) {
@@ -51,26 +53,46 @@ module.exports = {
   /**
    * Set the Kibana token using the default credentials
    *
-   * @param {*} request
+   * @param {Object} request the http request object
    * @param {*} h
    */
   setKibanaToken: async (request, h) => {
     return await AuthScheme.setKibanaToken(request, h);
   },
 
-  hasAuthToken: async request => {
+  /**
+   * Test if the request has the authorization token
+   * 
+   * @param {Object} request the http request object
+   */
+  hasAuthToken: async (request) => {
     return await AuthScheme.hasToken(request);
   },
 
-  getAuthToken: async request => {
+  /**
+   * Get the authorization token from the request
+   * 
+   * @param {Object} request the http request object
+   */
+  getAuthToken: async (request) => {
     return await AuthScheme.getToken(request);
   },
 
-  verifyAuthToken: async request => {
+  /**
+   * Verfy the configured authorization token
+   * 
+   * @param {Object} request the http request object
+   */
+  verifyAuthToken: async (request) => {
     return await AuthScheme.verifyToken(request);
   },
 
-  verifyAuthPermissions: async request => {
+  /**
+   * Verify the user has the necessary permissions to access Kibana
+   * 
+   * @param {Object} request the http request object
+   */
+  verifyAuthPermissions: async (request) => {
     return await AuthScheme.verifyPermissions(request);
   }
 };

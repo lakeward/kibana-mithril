@@ -18,7 +18,7 @@ describe("Configuration reader", () => {
     require("../src/config").reload();
   });
 
-  it("Should read and verify the ACM configuration.", () => {
+  it("Config: Should read and verify the ACM configuration.", () => {
     const config = require("../src/config").load("acm");
 
     Assert.notEqual(config, "Failed to load configuration file.");
@@ -37,7 +37,7 @@ describe("Configuration reader", () => {
     Assert.notEqual(Config.acmPermissionType(), null);
   });
 
-  it("Should read and verify the Login/Cookie configuration.", () => {
+  it("Config: Should read and verify the Login/Cookie configuration.", () => {
     const config = require("../src/config").load("authentication");
 
     Assert.notEqual(config.kbnVersion, null);

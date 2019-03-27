@@ -26,7 +26,7 @@ module.exports = {
    *
    * @return JWT signed token
    */
-  signToken: function(uid, groups, expiry, iat) {
+  signToken: (uid, groups, expiry, iat) => {
     return Jwt.sign(
       {
         id: uid,
@@ -45,7 +45,7 @@ module.exports = {
    *
    * @return secret for JWT token
    */
-  secret: function() {
+  secret: () => {
     // generate a random secret if none is set.
     if (!Config.secret()) {
       let secret = Crypto.randomBytes(64).toString("base64");
@@ -57,31 +57,3 @@ module.exports = {
   }
 };
 
-/**
- * Construct ACM URL to verify acmToken
- */
-function getUrlVerifyToken() {
-  return encodeURI(
-    Config.acmProtocol() +
-      "://" +
-      Config.acmHost() +
-      ":" +
-      Config.acmPort() +
-      "/acmserver/api/auth"
-  );
-}
-
-/**
- * Construct ACM URL to verify permission configuration
- */
-function getUrlVerifyPermission() {
-  return encodeURI(
-    Config.acmProtocol() +
-      "://" +
-      Config.acmHost() +
-      ":" +
-      Config.acmPort() +
-      "/acmserver/api/permissiontypes/" +
-      Config.acmPermissionType()
-  );
-}
