@@ -35,14 +35,6 @@ describe("Auth Utilities", () => {
     Assert.equal(hasToken, true);
   });
 
-  it("Auth: Has acmToken in request", async () => {
-    let request = await HapiTestServer.getRequest();
-    request.state = { };
-    request.state[Config.acmTokenName()] = HapiTestServer.getAcmToken().token;
-    let hasToken = await Auth.hasAuthToken(request);
-    Assert.equal(hasToken, true);
-  });
-
   it("Auth: Verify valid acmToken in request", async () => {
     let request = await HapiTestServer.getRequest();
     request.state = { };

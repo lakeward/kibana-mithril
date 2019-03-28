@@ -136,31 +136,6 @@ module.exports = {
   },
 
   /**
-   * @param {Object} request the http request object
-   */
-  verifyPermissions: async (request) => {
-    let acmToken = await module.exports.getToken(request);
-    let response = await Fetch(urlUrlVerifyPermission, {
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: "Bearer " + acmToken
-      }
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        `User not configured with required permission type '${
-          Config.acmPermissionType
-        }'; Returned error '${response.statusText}'`
-      );
-    } else {
-      return true;
-    }
-  },
-
-  /**
    * Authenticate against ACM
    *
    * @param {string} username ACM user name

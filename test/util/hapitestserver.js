@@ -17,11 +17,17 @@ const Request = require("request");
 
 const AuthPlugin = require("../../index");
 const Acm = require("../../src/authentication/acm");
+const Config = require("../../src/config");
 
 const PORT = 5810;
 const HOST = "127.0.0.1";
 const PROTOCOL = "http";
 const URL = PROTOCOL + "://" + HOST + ":" + PORT;
+const ACM_USERNAME = "acm-admin";
+const ACM_PASSWORD = "secret";
+const INSIGHT_USERNAME = "admin@app.insight.com";
+const INSIGHT_PASSWORD = "admin";
+
 
 let server = undefined;
 let acmToken = undefined;
@@ -51,7 +57,7 @@ module.exports = {
 
     await plugin.init(server, {});
     await server.start();
-    acmToken = await Acm.authenticate("acm-admin", "secret");
+    acmToken = await Acm.authenticate(ACM_USERNAME, ACM_PASSWORD);
   },
 
   stop: async () => {
@@ -67,9 +73,29 @@ module.exports = {
   },
 
   getAcmCookieEntry: () => {
-    return "acmToken=" + acmToken.token;
+    return Config.acmTokenName() +"=" + acmToken.token;
   },
 
+  getAcmUserName: () => {
+    return ACM_USERNAME;
+  },
+
+  getAcmPassword: () => {
+    return ACM_PASSWORD;
+  },
+
+  getInsightUserName: () => {
+    return INSIGHT_USERNAME;
+  },
+
+  getInsightPassword: () => {
+    return INSIGHT_PASSWORD;
+  },
+
+  getInsightCookieEntry: (token) => {
+    return Config.getInsightCookieEntry() + "=" + token;
+  },
+  
   getRequest: async () => {
     return new Promise((resolve, reject) => {
       Request.get({

@@ -1,14 +1,23 @@
 {
-    "authScheme": "acm",
+    "authScheme": "insight",
+    "kibana": {
+      },
     "acm": {
         "host": "aa-portal-dev.flatironssolutions.com",
         "port": "8081",
         "protocol": "http",
         "tokenName": "acmToken",
-        "acmPermissionType": "Audit Manager",
-        "redirectUrl": "http://aa-portal-dev.flatironssolutions.com:8081/acmclient/#/login?logout=You%20are%20not%20logged%20in&url=http:%2F%2Faa-portal-dev.flatironssolutions.com:5601%2Fapp%2Fkibana",
-        "userFile": "users.json"
+        "permissionType": "Audit Manager",
+        "redirectUrl": "http://aa-portal-dev.flatironssolutions.com:8081/acmclient/#/login?logout=You%20are%20not%20logged%20in&url=http:%2F%2Faa-portal-dev.flatironssolutions.com:5601%2Fapp%2Fkibana"
     },
+    "insight": {
+        "host": "192.168.222.137",
+        "port": "8080",
+        "protocol": "http",
+        "tokenName": "ACTIVITI_REMEMBER_ME",
+        "permissionType": "access-reports",
+        "redirectUrl": "http://insight-dev.flatironssolutions.com:8080/insight-app/#/login"
+    },    
     "authentication": {
         "kbnVersion": "6.6.2",
         "tokenName": "kibanaToken",

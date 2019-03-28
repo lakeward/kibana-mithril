@@ -84,7 +84,31 @@ module.exports = {
   },
 
   acmPermissionType: () => {
-    return config["acm"]["acmPermissionType"];
+    return config["acm"]["permissionType"];
+  },
+
+  insightHost: () => {
+    return config["insight"]["host"];
+  },
+
+  insightPort: () => {
+    return config["insight"]["port"];
+  },
+
+  insightProtocol: () => {
+    return config["insight"]["protocol"];
+  },
+
+  insightTokenName: () => {
+    return config["insight"]["tokenName"];
+  },
+
+  insightRedirectUrl: () => {
+    return config["insight"]["redirectUrl"];
+  },
+
+  insightPermissionType: () => {
+    return config["insight"]["permissionType"];
   },
 
   secret: () => {

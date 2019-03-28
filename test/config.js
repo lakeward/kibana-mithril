@@ -26,7 +26,7 @@ describe("Configuration reader", () => {
     Assert.notEqual(config.port, null);
     Assert.notEqual(config.protocol, null);
     Assert.notEqual(config.tokenName, null);
-    Assert.notEqual(config.acmPermissionType, null);
+    Assert.notEqual(config.permissionType, null);
     Assert.notEqual(config.redirectUrl, null);
 
     Assert.notEqual(Config.acmHost(), null);

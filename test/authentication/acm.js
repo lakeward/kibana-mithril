@@ -35,13 +35,13 @@ describe("ACM Utilities", () => {
   });
 
   it("ACM: Valid authentication request", async () => {
-    let acmToken = await Acm.authenticate("acm-admin", "secret");
+    let acmToken = await Acm.authenticate(HapiTestServer.getAcmUserName(), HapiTestServer.getAcmPassword());
     Assert.notEqual(acmToken.token, undefined);
   });
 
   it("ACM: Invalid authentication request", async () => {
     try {
-      let acmToken = await Acm.authenticate("acm-admin", "secret2");
+      let acmToken = await Acm.authenticate(HapiTestServer.getAcmUserName(), "secret2");
     } catch (e) {
       Assert.equal(e.message,
         "Unable to authenticate; ACM returned error 'Unauthorized'"

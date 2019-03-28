@@ -33,8 +33,7 @@ module.exports = {
       path: "/corena/logout",
 
       handler(request, h) {
-        h.unstate(Config.tokenName(), Config.cookie());
-        h.unstate(Config.acmTokenName(), Config.cookie());
+        unsetTokens(h);
         return h.response().code(200);
       }
     });
@@ -71,19 +70,19 @@ module.exports = {
       return {
         authenticate: async (request, h) => {
           try {
-            if (Config.authScheme() === "acm") {
+            if (Config.authScheme() === "acm" || Config.authScheme() === "insight") {
 
               let hasKibanaToken = await Auth.hasKibanaToken(request);
-              let hasAcmToken = await Auth.hasAuthToken(request);
+              let hasAuthToken = await Auth.hasAuthToken(request);
             
-              if (hasKibanaToken && hasAcmToken) {
+              if (hasKibanaToken && hasAuthToken) {
                 
                 let credentials = await server.auth.test("jwt", request);
                 return h.authenticated({ credentials: credentials });
 
-              } else if (hasAcmToken) {
+              } else if (hasAuthToken) {
                 
-                // Generate kibanaToken based on acmToken
+                // Generate kibanaToken based on authorization token
                 await Auth.verifyAuthToken(request);
                 await Auth.verifyAuthPermissions(request);
                 await Auth.setKibanaToken(request, h);
@@ -93,9 +92,10 @@ module.exports = {
 
               } else {
                 throw new Error(
-                  `acmToken required to authenticate with authScheme='${Config.authScheme()}'`
+                  `${Config.acmTokenName()} or ${Config.insightTokenName()} required to authenticate with authScheme='${Config.authScheme()}'`
                 );
               }
+              
             } else if (Config.authScheme() === "kibana") {
               // Enable use of kibana without authentication if desired              
               await Auth.setKibanaToken(request, h);
@@ -109,13 +109,13 @@ module.exports = {
 
           } catch (e) {
             Logger.log(e);
-            h.unstate(Config.tokenName(), Config.cookie());
-            h.unstate(Config.acmTokenName(), Config.cookie());
+
+            unsetTokens(h);
 
             if (Config.authScheme() === "acm") {
               return h.redirect(Config.acmRedirectUrl()).takeover();
             } else if (Config.authScheme() === "insight") {
-              return h.redirect(Config.insightRedirectUrl()).takeover();
+                return h.redirect(Config.insightRedirectUrl()).takeover();
             } else {
               return h.redirect(`${basePath}/corena`).takeover();
             }
@@ -170,4 +170,15 @@ function source(request) {
     ip: request.info.remoteAddress,
     forwarded: request.headers["x-forwarded-for"]
   };
+}
+
+/**
+ * Unset all configured cookies
+ * 
+ * @param {Object} handler request handler
+ */
+function unsetTokens (handler) {
+  handler.unstate(Config.tokenName(), Config.cookie());
+  handler.unstate(Config.acmTokenName(), Config.cookie());
+  handler.unstate(Config.insightTokenName(), Config.cookie());
 }
