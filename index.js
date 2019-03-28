@@ -19,15 +19,15 @@ require("./src/authentication/auth");
 
 module.exports = function(kibana) {
   return new kibana.Plugin({
-    name: "kibana-corena-authorization",
+    name: "corena-authorization",
     require: [],
     uiExports: {
       app: {
         title: "Kibana CORENA Plugin",
         description: "Kibana CORENA Plugin.",
-        main: "plugins/kibana-corena-authorization/script/app",
+        main: "plugins/corena-authorization/script/app",
         euiIconType: "securityApp",
-        icon: "plugins/kibana-corena-authorization/img/icon.svg"
+        icon: "plugins/corena-authorization/img/icon.svg"
       }
     },
 

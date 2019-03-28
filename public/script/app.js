@@ -18,7 +18,7 @@ import '../style/style.css';
 
 document.title = 'Authentication - Kibana';
 
-var app = uiModules.get('app/kibana-corena-authorization', []);
+var app = uiModules.get('app/corena-authorization', []);
 
 routes.enable();
 routes.when('/', {
@@ -26,7 +26,7 @@ routes.when('/', {
     reloadOnSearch: false
 });
 
-app.controller('kibana-corena-authorization', ($scope, $http) => {
+app.controller('corena-authorization', ($scope, $http) => {
 
 
   $scope.logout = () => {

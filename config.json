@@ -1,7 +1,6 @@
 {
-    "authScheme": "insight",
-    "kibana": {
-      },
+    "authScheme": "acm",
+    "kibana": {},
     "acm": {
         "host": "aa-portal-dev.flatironssolutions.com",
         "port": "8081",
@@ -17,7 +16,7 @@
         "tokenName": "ACTIVITI_REMEMBER_ME",
         "permissionType": "access-reports",
         "redirectUrl": "http://insight-dev.flatironssolutions.com:8080/insight-app/#/login"
-    },    
+    },
     "authentication": {
         "kbnVersion": "6.6.2",
         "tokenName": "kibanaToken",
@@ -31,7 +30,7 @@
             "strictHeader": true,
             "domain": ".flatironssolutions.com"
         },
-        "secret": "kibana-corena-authorizatino-secret"
+        "secret": "iwj8xPjb5g9BGdZX63JrN13V4VOrTCZds8viu2Py/0LfRssdgyJLu4SuHGsHUze4txfBY0tKirNtoeUNZEjTEA=="
     },
     "proxy": {
         "enabled": false,
