@@ -72,28 +72,41 @@ module.exports = {
         authenticate: async (request, h) => {
           try {
             if (Config.authScheme() === "acm") {
+
               let hasKibanaToken = await Auth.hasKibanaToken(request);
               let hasAcmToken = await Auth.hasAuthToken(request);
-
+            
               if (hasKibanaToken && hasAcmToken) {
+                
                 let credentials = await server.auth.test("jwt", request);
                 return h.authenticated({ credentials: credentials });
+
               } else if (hasAcmToken) {
+                
+                // Generate kibanaToken based on acmToken
                 await Auth.verifyAuthToken(request);
                 await Auth.verifyAuthPermissions(request);
                 await Auth.setKibanaToken(request, h);
-
+            
                 let credentials = await server.auth.test("jwt", request);
                 return h.authenticated({ credentials: credentials });
+
               } else {
                 throw new Error(
                   `acmToken required to authenticate with authScheme='${Config.authScheme()}'`
                 );
               }
-            } else {
+            } else if (Config.authScheme() === "kibana") {
+              // Enable use of kibana without authentication if desired              
+              await Auth.setKibanaToken(request, h);
               let credentials = await server.auth.test("jwt", request);
               return h.authenticated({ credentials: credentials });
+            } else {
+              throw new Error(
+                `Unsupported authScheme='${Config.authScheme()}'`
+              );
             }
+
           } catch (e) {
             Logger.log(e);
             h.unstate(Config.tokenName(), Config.cookie());

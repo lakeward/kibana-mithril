@@ -20,6 +20,7 @@ const Logger = require("../logger");
 let AuthScheme = require("./" + Config.authScheme());
 
 module.exports = {
+
   /**
    * Verifies the validity of a token.
    * @param token to be verified.
